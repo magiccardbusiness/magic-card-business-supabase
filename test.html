@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Supabase Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        #status { padding: 20px; margin: 20px 0; border-radius: 10px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        button { padding: 10px 20px; font-size: 16px; margin: 10px; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Supabase Connection Test</h1>
+    
+    <div id="status">Initializing...</div>
+    
+    <div>
+        <button onclick="testConnection()">Test Connection</button>
+        <button onclick="insertTestData()">Insert Test Card</button>
+        <button onclick="readTestData()">Read Test Cards</button>
+    </div>
+    
+    <div id="results" style="margin-top: 20px;"></div>
+
+    <script>
+        // YOUR CREDENTIALS
+        const supabaseUrl = 'https://elmhkhvryjzljxskbfps.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVsbWhraHZyeWp6bGp4c2tiZnBzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg0NDc3NjMsImV4cCI6MjA4NDAyMzc2M30.Orrh2Pejnt3KPJMTUTmRRkhCwtZVfjUreKvX546bOcw';
+        
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        
+        async function testConnection() {
+            setStatus('Testing connection to Supabase...', '');
+            
+            try {
+                // Test 1: Simple query
+                const { data, error } = await supabase
+                    .from('cards')
+                    .select('card_id')
+                    .limit(1);
+                
+                if (error) throw error;
+                
+                setStatus('✅ SUCCESS! Connected to Supabase', 'success');
+                document.getElementById('results').innerHTML = 
+                    `<p>Connection established. Found ${data?.length || 0} cards in database.</p>`;
+                
+            } catch (error) {
+                setStatus(`❌ ERROR: ${error.message}`, 'error');
+                document.getElementById('results').innerHTML = 
+                    `<p>Full error: ${JSON.stringify(error, null, 2)}</p>`;
+            }
+        }
+        
+        async function insertTestData() {
+            setStatus('Inserting test card...', '');
+            
+            const testCard = {
+                card_id: 'TEST_' + Date.now(),
+                message_type: 'text',
+                message_text: 'This is a test card from the connection test!',
+                created_at: new Date().toISOString(),
+                status: 'active'
+            };
+            
+            try {
+                const { data, error } = await supabase
+                    .from('cards')
+                    .insert([testCard])
+                    .select();
+                
+                if (error) throw error;
+                
+                setStatus('✅ Test card inserted successfully!', 'success');
+                document.getElementById('results').innerHTML = 
+                    `<p>Inserted card: ${JSON.stringify(data[0], null, 2)}</p>`;
+                
+            } catch (error) {
+                setStatus(`❌ Insert failed: ${error.message}`, 'error');
+                document.getElementById('results').innerHTML = 
+                    `<p>Error details: ${JSON.stringify(error, null, 2)}</p>`;
+            }
+        }
+        
+        async function readTestData() {
+            setStatus('Reading cards...', '');
+            
+            try {
+                const { data, error } = await supabase
+                    .from('cards')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .limit(5);
+                
+                if (error) throw error;
+                
+                setStatus(`✅ Found ${data.length} cards`, 'success');
+                
+                if (data.length > 0) {
+                    let html = '<h3>Recent Cards:</h3><ul>';
+                    data.forEach(card => {
+                        html += `<li><strong>${card.card_id}</strong>: ${card.message_text || card.message_type}</li>`;
+                    });
+                    html += '</ul>';
+                    document.getElementById('results').innerHTML = html;
+                } else {
+                    document.getElementById('results').innerHTML = '<p>No cards found in database.</p>';
+                }
+                
+            } catch (error) {
+                setStatus(`❌ Read failed: ${error.message}`, 'error');
+            }
+        }
+        
+        function setStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = type;
+        }
+        
+        // Auto-test on load
+        window.onload = testConnection;
+    </script>
+</body>
+</html>
