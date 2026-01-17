@@ -1,326 +1,171 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-    <title>Magic Card QR Generator</title>
-    
-    <!-- Supabase JS -->
+    <title>Magic Card Maker</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- QR Code Library -->
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
             background: black; 
-            min-height: 100vh;
-            font-family: 'Arial', sans-serif;
-            color: white;
-            padding: 20px;
-        }
-        
-        /* Company Logo */
-        #company-logo {
+            color: white; 
+            font-family: Arial; 
+            padding: 20px; 
             text-align: center;
-            color: white;
-            font-size: 32px;
-            font-weight: bold;
-            margin-bottom: 15px;
-            padding-top: 10px;
         }
-        
-        .magic-i {
-            position: relative;
-            display: inline-block;
-            color: #FFD700;
+        .container { 
+            max-width: 600px; 
+            margin: 0 auto; 
+            background: #2C3E50; 
+            padding: 30px; 
+            border-radius: 15px; 
         }
-        
-        .magic-i::before {
-            content: "★";
-            position: absolute;
-            top: -15px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 14px;
-            color: #FFD700;
-        }
-        
-        /* Container */
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: rgba(44, 62, 80, 0.9);
-            border-radius: 15px;
-            border: 1px solid #34495E;
-            padding: 20px;
-            margin-top: 20px;
-        }
-        
-        /* Connection Status */
-        .connection-status {
-            text-align: center;
-            font-size: 14px;
-            color: #27AE60;
-            margin-bottom: 10px;
-        }
-        
-        /* Form Sections */
-        .form-section { text-align: center; margin-bottom: 30px; }
-        .section-title { font-size: 24px; margin-bottom: 20px; color: #FFD700; }
-        .form-group { margin-bottom: 25px; text-align: left; }
-        label { display: block; margin-bottom: 8px; color: #FFD700; font-weight: bold; }
         input, textarea { 
             width: 100%; 
             padding: 15px; 
-            background: rgba(255,255,255,0.1); 
-            border: 2px solid #34495E; 
-            border-radius: 8px; 
+            margin: 10px 0; 
+            background: #34495E; 
+            border: none; 
             color: white; 
-            font-size: 16px;
+            border-radius: 8px; 
         }
-        textarea { height: 150px; resize: vertical; }
-        
-        /* Generate Button */
-        .generate-btn { 
-            background: linear-gradient(135deg, #27AE60 0%, #2ECC71 100%); 
+        button { 
+            background: #27AE60; 
             color: white; 
             border: none; 
-            padding: 18px; 
-            font-size: 20px; 
-            border-radius: 10px; 
-            width: 100%; 
+            padding: 15px 30px; 
+            font-size: 18px; 
+            border-radius: 8px; 
             cursor: pointer; 
-            margin-top: 20px; 
-            font-weight: bold;
+            margin: 10px;
         }
-        
-        /* Result Section */
-        .result-section { 
-            display: none; 
-            text-align: center; 
-        }
-        
         #qrcode { 
-            margin: 25px auto; 
+            margin: 20px; 
             padding: 20px; 
-            background: rgba(255,255,255,0.1); 
-            border-radius: 15px; 
-            min-height: 350px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center;
-            flex-direction: column;
-        }
-        
-        .qr-canvas { 
-            max-width: 100%; 
-            height: auto; 
-            border: 10px solid white; 
-            border-radius: 10px; 
             background: white; 
+            display: inline-block;
         }
+        #status {
+            padding: 10px;
+            margin: 10px;
+            border-radius: 5px;
+        }
+        .success { background: #27AE60; }
+        .error { background: #E74C3C; }
     </style>
 </head>
 <body>
-    <!-- YOUR BEAUTIFUL LOGO -->
-    <div id="company-logo">
-        MAG<span class="magic-i">I</span>C CARD
-    </div>
-    
-    <div class="connection-status" id="connectionStatus">
-        🔄 Connecting to cloud...
-    </div>
+    <h1>🎴 MAGIC CARD MAKER</h1>
+    <div id="connection">🔄 Connecting...</div>
     
     <div class="container">
-        <!-- Form Section -->
-        <div class="form-section">
-            <h2 class="section-title">🎴 Create Your Magic Card</h2>
-            
-            <!-- Card ID Input -->
-            <div class="form-group">
-                <label for="cardId"><i class="fas fa-id-card"></i> Card ID:</label>
-                <input type="text" id="cardId" placeholder="e.g., BIRTHDAY001" value="CARD1234">
-            </div>
-            
-            <!-- Message Input -->
-            <div class="form-group">
-                <label for="messageText"><i class="fas fa-comment"></i> Your Message:</label>
-                <textarea id="messageText">Welcome to Magic Card! ✨</textarea>
-            </div>
-            
-            <!-- Generate Button -->
-            <button class="generate-btn" onclick="generateQRCode()" id="generateBtn">
-                <i class="fas fa-magic"></i> GENERATE MAGIC QR CODE
-            </button>
-            
-            <!-- Status Message -->
-            <div id="status" style="padding: 15px; margin: 20px 0; display: none;"></div>
-        </div>
+        <h2>Create Your Card</h2>
         
-        <!-- Result Section -->
-        <div class="result-section" id="resultSection">
-            <h2 style="color: #FFD700;">✅ Your Magic Card is Ready!</h2>
-            <div id="qrcode">
-                <div style="font-size: 80px; margin-bottom: 20px;">🔮</div>
-                <p>QR code will appear here</p>
-            </div>
-            <div style="margin-top: 20px;">
-                <button onclick="downloadQR()" style="background: #9B59B6; color: white; border: none; padding: 15px 25px; border-radius: 8px; margin: 5px;">
-                    <i class="fas fa-download"></i> DOWNLOAD QR
-                </button>
-                <button onclick="createNewCard()" style="background: #E74C3C; color: white; border: none; padding: 15px 25px; border-radius: 8px; margin: 5px;">
-                    <i class="fas fa-plus"></i> NEW CARD
-                </button>
-            </div>
+        <input type="text" id="cardId" placeholder="Card ID" value="TEST123">
+        <textarea id="message" placeholder="Your message">Hello from Magic Card!</textarea>
+        
+        <button onclick="createCard()">✨ CREATE CARD</button>
+        
+        <div id="status"></div>
+        
+        <div id="qrcode" style="display:none;">
+            <h3>Your QR Code:</h3>
+            <canvas id="qrCanvas"></canvas>
+            <br>
+            <button onclick="downloadQR()">📥 Download QR</button>
         </div>
     </div>
 
     <script>
-        // ======================
         // SUPABASE - ONLY ONE TIME!
-        // ======================
         const supabaseUrl = 'https://elmhkhvryjzljxskbfps.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVsbWhraHZyeWp6bGp4c2tiZnBzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg0NDc3NjMsImV4cCI6MjA4NDAyMzc2M30.Orrh2Pejnt3KPJMTUTmRRkhCwtZVfjUreKvX546bOcw';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
         
-        // THIS IS THE ONLY SUPABASE LINE - NO DUPLICATES!
-        
-        
-        // Test connection
-        async function testSupabase() {
+        // Test connection on load
+        async function checkConnection() {
             try {
                 const { data, error } = await supabase.from('cards').select('count');
                 if (error) throw error;
-                document.getElementById('connectionStatus').textContent = "✅ Connected to Supabase Cloud";
-                document.getElementById('connectionStatus').style.color = "#27AE60";
+                document.getElementById('connection').innerHTML = '✅ Connected to Cloud';
+                document.getElementById('connection').style.color = 'green';
             } catch (error) {
-                document.getElementById('connectionStatus').textContent = "❌ Connection failed";
-                document.getElementById('connectionStatus').style.color = "#E74C3C";
+                document.getElementById('connection').innerHTML = '❌ Connection Failed';
+                document.getElementById('connection').style.color = 'red';
             }
         }
         
-        // Variables
-        let currentQRCodeUrl = null;
-        let currentCardId = '';
-        
-        // On page load
-        window.onload = async function() {
-            await testSupabase();
-        };
-        
-        // Generate QR Code
-        async function generateQRCode() {
-            const cardId = document.getElementById('cardId').value.trim();
-            const messageText = document.getElementById('messageText').value.trim();
+        // Create card function
+        async function createCard() {
+            const cardId = document.getElementById('cardId').value;
+            const message = document.getElementById('message').value;
             
-            if (!cardId || !messageText) {
-                showStatus('❌ Please fill in all fields', 'error');
+            if (!cardId || !message) {
+                showStatus('Please fill all fields', 'error');
                 return;
             }
             
-            currentCardId = cardId;
-            const generateBtn = document.getElementById('generateBtn');
-            generateBtn.disabled = true;
-            generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
-            
-            showStatus('⏳ Saving to cloud...', 'success');
+            showStatus('Saving to cloud...', 'success');
             
             try {
                 // Save to Supabase
-                const messageData = {
-                    card_id: cardId,
-                    message_type: 'text',
-                    message_text: messageText,
-                    created_at: new Date().toISOString(),
-                    status: 'active'
-                };
-                
-                const { data, error } = await supabase
+                const { error } = await supabase
                     .from('cards')
-                    .insert([messageData]);
+                    .insert([{
+                        card_id: cardId,
+                        message_type: 'text',
+                        message_text: message,
+                        created_at: new Date().toISOString(),
+                        status: 'active'
+                    }]);
                 
                 if (error) throw error;
                 
                 showStatus('✅ Saved to cloud!', 'success');
                 
                 // Generate QR code
-                const baseUrl = window.location.origin;
-                const cardUrl = `${baseUrl}/view.html?card=${encodeURIComponent(cardId)}`;
+                const url = window.location.origin + '/view.html?card=' + cardId;
+                const canvas = document.getElementById('qrCanvas');
                 
-                const qrContainer = document.getElementById('qrcode');
-                qrContainer.innerHTML = '';
-                
-                const canvas = document.createElement('canvas');
-                qrContainer.appendChild(canvas);
-                
-                QRCode.toCanvas(canvas, cardUrl, {
-                    width: 256,
+                QRCode.toCanvas(canvas, url, {
+                    width: 200,
                     margin: 2,
                     color: { dark: '#000000', light: '#FFFFFF' }
                 }, function(error) {
                     if (error) {
-                        showStatus('❌ QR code failed', 'error');
+                        showStatus('QR error: ' + error, 'error');
                         return;
                     }
                     
-                    canvas.className = 'qr-canvas';
-                    currentQRCodeUrl = canvas.toDataURL('image/png');
-                    
-                    document.getElementById('resultSection').style.display = 'block';
-                    generateBtn.disabled = false;
-                    generateBtn.innerHTML = '<i class="fas fa-magic"></i> GENERATE MAGIC QR CODE';
-                    
-                    showStatus('✅ Magic QR code created!', 'success');
+                    document.getElementById('qrcode').style.display = 'block';
+                    showStatus('✅ QR Code Created!', 'success');
                 });
                 
             } catch (error) {
-                showStatus('❌ Error: ' + error.message, 'error');
-                generateBtn.disabled = false;
-                generateBtn.innerHTML = '<i class="fas fa-magic"></i> GENERATE MAGIC QR CODE';
+                showStatus('Error: ' + error.message, 'error');
             }
         }
         
         // Download QR
         function downloadQR() {
-            if (!currentQRCodeUrl) {
-                showStatus('❌ No QR code to download', 'error');
-                return;
-            }
+            const canvas = document.getElementById('qrCanvas');
             const link = document.createElement('a');
-            link.href = currentQRCodeUrl;
-            link.download = `Magic-Card-${currentCardId}-QR.png`;
-            document.body.appendChild(link);
+            link.download = 'magic-card-qr.png';
+            link.href = canvas.toDataURL('image/png');
             link.click();
-            document.body.removeChild(link);
-            showStatus('✅ QR downloaded!', 'success');
-        }
-        
-        // New Card
-        function createNewCard() {
-            document.getElementById('cardId').value = 'CARD' + Math.floor(1000 + Math.random() * 9000);
-            document.getElementById('messageText').value = 'Welcome to Magic Card! ✨';
-            document.getElementById('resultSection').style.display = 'none';
-            showStatus('✨ Ready for new card!', 'success');
+            showStatus('✅ QR Downloaded!', 'success');
         }
         
         // Show status
-        function showStatus(message, type) {
-            const statusDiv = document.getElementById('status');
-            statusDiv.textContent = message;
-            statusDiv.style.display = 'block';
-            statusDiv.style.color = type === 'error' ? '#E74C3C' : '#27AE60';
-            statusDiv.style.background = type === 'error' ? 'rgba(231,76,60,0.2)' : 'rgba(39,174,96,0.2)';
-            statusDiv.style.padding = '15px';
-            statusDiv.style.borderRadius = '8px';
-            statusDiv.style.margin = '20px 0';
-            
-            setTimeout(() => { 
-                statusDiv.style.display = 'none'; 
-            }, 5000);
+        function showStatus(msg, type) {
+            const div = document.getElementById('status');
+            div.textContent = msg;
+            div.className = type;
+            div.style.display = 'block';
+            setTimeout(() => div.style.display = 'none', 3000);
         }
+        
+        // Check connection when page loads
+        window.onload = checkConnection;
     </script>
 </body>
 </html>
-
