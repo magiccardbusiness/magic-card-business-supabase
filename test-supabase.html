@@ -1,40 +1,185 @@
 <!DOCTYPE html>
 <html>
+<head>
+    <title>Supabase Connection Test</title>
+    <style>
+        body { font-family: Arial; padding: 40px; max-width: 800px; margin: 0 auto; }
+        .result { 
+            padding: 20px; 
+            margin: 20px 0; 
+            border-radius: 10px; 
+            border: 2px solid;
+        }
+        .success { background: #d4edda; color: #155724; border-color: #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border-color: #f5c6cb; }
+        .warning { background: #fff3cd; color: #856404; border-color: #ffeaa7; }
+        button { padding: 12px 24px; font-size: 16px; margin: 10px; cursor: pointer; }
+        pre { background: #f8f9fa; padding: 15px; border-radius: 5px; overflow: auto; }
+    </style>
+</head>
 <body>
-    <h1>Supabase Test</h1>
-    <div id="result">Testing...</div>
+    <h1>🔧 Supabase Connection Diagnostic</h1>
     
+    <div id="result" class="result">
+        <h3>⏳ Testing connection...</h3>
+    </div>
+    
+    <div>
+        <button onclick="testConnection()">🔄 Test Connection</button>
+        <button onclick="insertTestData()">📝 Insert Test Data</button>
+        <button onclick="readAllData()">📋 Read All Data</button>
+    </div>
+    
+    <div id="dataDisplay" style="margin-top: 30px;"></div>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
+        // YOUR SUPABASE CREDENTIALS
         const supabaseUrl = 'https://elmhkhvryjzljxskbfps.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVsbWhraHZyeWp6bGp4c2tiZnBzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg0NDc3NjMsImV4cCI6MjA4NDAyMzc2M30.Orrh2Pejnt3KPJMTUTmRRkhCwtZVfjUreKvX546bOcw';
         
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        let supabase;
         
-        async function test() {
+        // Initialize Supabase
+        function initSupabase() {
             try {
-                // Try simple query
+                supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+                console.log('Supabase initialized');
+                return true;
+            } catch (error) {
+                showResult('❌ Failed to initialize Supabase: ' + error.message, 'error');
+                return false;
+            }
+        }
+        
+        // Test Connection
+        async function testConnection() {
+            showResult('🔌 Testing connection to Supabase...', 'warning');
+            
+            if (!initSupabase()) return;
+            
+            try {
+                // Test 1: Simple query to check if table exists
                 const { data, error } = await supabase
                     .from('cards')
                     .select('card_id')
                     .limit(1);
                 
                 if (error) {
-                    document.getElementById('result').innerHTML = 
-                        `❌ Error: ${error.message}<br>Code: ${error.code}`;
+                    showResult(`❌ Connection failed: ${error.message}<br>
+                               <small>Code: ${error.code || 'N/A'}<br>
+                               Details: ${error.details || 'N/A'}</small>`, 'error');
                     return;
                 }
                 
-                document.getElementById('result').innerHTML = 
-                    `✅ Connected! Found ${data.length} cards`;
+                showResult(`✅ CONNECTED SUCCESSFULLY!<br>
+                           Found ${data.length} cards in database.<br>
+                           <small>Table exists and is accessible.</small>`, 'success');
                 
-            } catch (err) {
-                document.getElementById('result').innerHTML = 
-                    `❌ Exception: ${err.message}`;
+                // Show sample data if any
+                if (data.length > 0) {
+                    document.getElementById('dataDisplay').innerHTML = 
+                        `<h3>Sample Card:</h3><pre>${JSON.stringify(data[0], null, 2)}</pre>`;
+                } else {
+                    document.getElementById('dataDisplay').innerHTML = 
+                        `<h3>⚠️ Table is empty</h3><p>Click "Insert Test Data" to add sample cards.</p>`;
+                }
+                
+            } catch (error) {
+                showResult('❌ Unexpected error: ' + error.message, 'error');
             }
         }
         
-        test();
+        // Insert Test Data
+        async function insertTestData() {
+            showResult('📝 Inserting test data...', 'warning');
+            
+            if (!initSupabase()) return;
+            
+            const testCards = [
+                {
+                    card_id: 'TEST_' + Date.now(),
+                    message_type: 'text',
+                    message_text: 'Hello from Magic Card Test! 🎴',
+                    created_at: new Date().toISOString(),
+                    status: 'active'
+                },
+                {
+                    card_id: 'WELCOME001',
+                    message_type: 'text',
+                    message_text: 'Welcome to Magic Card! Scan QR codes to reveal messages. ✨',
+                    created_at: new Date().toISOString(),
+                    status: 'active'
+                }
+            ];
+            
+            try {
+                const { data, error } = await supabase
+                    .from('cards')
+                    .insert(testCards)
+                    .select();
+                
+                if (error) throw error;
+                
+                showResult(`✅ Inserted ${data.length} test cards successfully!`, 'success');
+                
+                document.getElementById('dataDisplay').innerHTML = 
+                    `<h3>Inserted Cards:</h3><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                
+            } catch (error) {
+                showResult(`❌ Failed to insert: ${error.message}`, 'error');
+            }
+        }
+        
+        // Read All Data
+        async function readAllData() {
+            showResult('📋 Reading all cards...', 'warning');
+            
+            if (!initSupabase()) return;
+            
+            try {
+                const { data, error } = await supabase
+                    .from('cards')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+                
+                if (error) throw error;
+                
+                if (data.length === 0) {
+                    showResult('📭 No cards found in database.', 'warning');
+                    document.getElementById('dataDisplay').innerHTML = 
+                        '<p>The table is empty. Insert some test data first.</p>';
+                } else {
+                    showResult(`✅ Found ${data.length} cards`, 'success');
+                    
+                    let html = `<h3>All Cards (${data.length} total):</h3>`;
+                    data.forEach((card, index) => {
+                        html += `<div style="background: #f8f9fa; padding: 15px; margin: 10px 0; border-radius: 8px;">
+                                 <strong>#${index + 1}: ${card.card_id}</strong><br>
+                                 <small>Type: ${card.message_type} | Created: ${new Date(card.created_at).toLocaleString()}</small><br>
+                                 ${card.message_text ? `Message: ${card.message_text}` : ''}
+                                 </div>`;
+                    });
+                    
+                    document.getElementById('dataDisplay').innerHTML = html;
+                }
+                
+            } catch (error) {
+                showResult(`❌ Failed to read: ${error.message}`, 'error');
+            }
+        }
+        
+        // Show Result
+        function showResult(message, type) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `<h3>${message}</h3>`;
+            resultDiv.className = `result ${type}`;
+        }
+        
+        // Auto-run on page load
+        window.onload = function() {
+            setTimeout(testConnection, 500);
+        };
     </script>
 </body>
 </html>
