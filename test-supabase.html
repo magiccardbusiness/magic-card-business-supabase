@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <h1>Supabase Test</h1>
+    <div id="result">Testing...</div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const supabaseUrl = 'https://elmhkhvryjzljxskbfps.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVsbWhraHZyeWp6bGp4c2tiZnBzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg0NDc3NjMsImV4cCI6MjA4NDAyMzc2M30.Orrh2Pejnt3KPJMTUTmRRkhCwtZVfjUreKvX546bOcw';
+        
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        
+        async function test() {
+            try {
+                // Try simple query
+                const { data, error } = await supabase
+                    .from('cards')
+                    .select('card_id')
+                    .limit(1);
+                
+                if (error) {
+                    document.getElementById('result').innerHTML = 
+                        `❌ Error: ${error.message}<br>Code: ${error.code}`;
+                    return;
+                }
+                
+                document.getElementById('result').innerHTML = 
+                    `✅ Connected! Found ${data.length} cards`;
+                
+            } catch (err) {
+                document.getElementById('result').innerHTML = 
+                    `❌ Exception: ${err.message}`;
+            }
+        }
+        
+        test();
+    </script>
+</body>
+</html>
