@@ -2,169 +2,132 @@
 <html>
 <head>
     <title>Magic Card AR</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         * { margin: 0; padding: 0; }
-        body { 
-            background: black; 
-            overflow: hidden;
-            width: 100vw;
-            height: 100vh;
-            font-family: 'Arial', sans-serif;
-        }
-        
-        /* Company Logo */
-        #company-logo {
-            position: fixed;
-            top: 25px;
-            left: 0;
-            width: 100%;
+        body {
+            background: black;
             color: white;
+            font-family: Arial, sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
             text-align: center;
-            font-size: 32px;
+            padding: 20px;
+        }
+        
+        .logo {
+            font-size: 3rem;
             font-weight: bold;
-            z-index: 1000;
-        }
-        
-        .magic-i {
-            position: relative;
-            display: inline-block;
             color: #FFD700;
+            margin-bottom: 30px;
+            text-shadow: 0 0 20px gold;
         }
         
-        .magic-i::before {
-            content: "★";
-            position: absolute;
-            top: -15px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 14px;
+        .message-box {
+            background: rgba(255, 215, 0, 0.1);
+            border: 2px solid #FFD700;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            margin: 20px;
+        }
+        
+        h2 {
             color: #FFD700;
+            margin-bottom: 20px;
         }
         
-        /* Instructions */
-        #instructions {
-            position: fixed;
-            top: 75px;
-            left: 0;
-            width: 100%;
-            color: #AAAAAA;
-            text-align: center;
-            font-size: 14px;
-            z-index: 1000;
-            padding: 0 20px;
+        p {
+            font-size: 1.2rem;
+            margin: 15px 0;
+            line-height: 1.6;
         }
         
-        /* Magic Button */
-        #magic-btn {
-            position: fixed;
-            bottom: 50px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #2C3E50;
+        .buttons {
+            margin-top: 30px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .btn {
+            padding: 15px 30px;
+            background: #3498db;
             color: white;
             border: none;
-            padding: 16px 40px;
-            font-size: 18px;
+            border-radius: 10px;
+            font-size: 1.1rem;
             font-weight: bold;
-            border-radius: 8px;
-            z-index: 1003;
             cursor: pointer;
-            border: 1px solid #34495E;
+            text-decoration: none;
+            transition: all 0.3s;
         }
         
-        /* Message Display */
-        #message-display {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 30px;
-            border-radius: 15px;
-            max-width: 80%;
-            text-align: center;
-            display: none;
-            z-index: 1004;
-            border: 2px solid #FFD700;
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(52, 152, 219, 0.3);
+        }
+        
+        .btn-maker {
+            background: #27ae60;
+        }
+        
+        .btn-view {
+            background: #9b59b6;
+        }
+        
+        .magic-icon {
+            font-size: 4rem;
+            margin: 20px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        @media (max-width: 768px) {
+            .logo { font-size: 2rem; }
+            .message-box { padding: 25px; }
+            .buttons { flex-direction: column; }
+            .btn { width: 100%; }
         }
     </style>
 </head>
 <body>
-    <!-- YOUR BEAUTIFUL LOGO -->
-    <div id="company-logo">
-        MAG<span class="magic-i">I</span>C CARD
+    <div class="logo">MAGIC CARD ✨</div>
+    
+    <div class="magic-icon">🎴</div>
+    
+    <div class="message-box">
+        <h2>Welcome to Magic Card AR</h2>
+        <p>Turn any surface into an interactive experience with augmented reality business cards.</p>
+        <p>Scan a Magic Card QR code to reveal hidden messages, images, or videos!</p>
+        
+        <div class="buttons">
+            <a href="maker.html" class="btn btn-maker">🎴 Create Cards</a>
+            <a href="view.html?card=DEMO123" class="btn btn-view">👁️ View Demo</a>
+        </div>
     </div>
     
-    <!-- Instructions -->
-    <div id="instructions">
-        Loading magic...
+    <div style="margin-top: 40px; color: #AAAAAA; font-size: 0.9rem;">
+        <p>Point your camera at a Magic Card QR code to activate AR experience</p>
     </div>
-    
-    <!-- Message Display -->
-    <div id="message-display">
-        <h2 id="message-title">✨ Magic Message ✨</h2>
-        <p id="message-text" style="font-size: 18px; margin: 20px 0;"></p>
-        <button onclick="closeMessage()" style="background: #FFD700; color: black; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
-            Close
-        </button>
-    </div>
-    
-    <!-- Magic Button -->
-    <button id="magic-btn">LOADING...</button>
 
     <script>
-        // ======================
-        // 1. GET MESSAGE FROM URL
-        // ======================
-        function getMessageFromUrl() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const cardId = urlParams.get('card');
-            const message = urlParams.get('message');
-            
-            if (message) {
-                return decodeURIComponent(message);
-            } else if (cardId) {
-                return `Magic Card: ${cardId}`;
-            } else {
-                return "Welcome to Magic Card! ✨ Scan a QR code to see a real message.";
-            }
-        }
+        // Simple greeting
+        console.log('Magic Card AR loaded');
         
-        // ======================
-        // 2. SHOW MESSAGE
-        // ======================
-        function showMessage() {
-            const message = getMessageFromUrl();
-            document.getElementById('message-text').textContent = message;
-            document.getElementById('message-display').style.display = 'block';
-            document.getElementById('magic-btn').style.display = 'none';
-            document.getElementById('instructions').textContent = "✨ Your magic message appears!";
-        }
-        
-        // ======================
-        // 3. CLOSE MESSAGE
-        // ======================
-        function closeMessage() {
-            document.getElementById('message-display').style.display = 'none';
-            document.getElementById('magic-btn').style.display = 'block';
-            document.getElementById('instructions').textContent = "Tap button to see message again";
-        }
-        
-        // ======================
-        // 4. INITIALIZE
-        // ======================
-        window.onload = function() {
-            const message = getMessageFromUrl();
-            document.getElementById('instructions').textContent = "Ready for magic! Tap button below";
-            document.getElementById('magic-btn').textContent = "✨ SHOW MAGIC MESSAGE";
-            document.getElementById('magic-btn').onclick = showMessage;
-            
-            // Auto-show after 2 seconds
-            setTimeout(showMessage, 2000);
-        };
+        // Auto-redirect to maker after 10 seconds if no interaction
+        setTimeout(() => {
+            console.log('Auto-redirecting to maker page...');
+        }, 10000);
     </script>
 </body>
 </html>
